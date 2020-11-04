@@ -1,1 +1,3 @@
-*These is my configuration files. It is a work in progress !!*
+**These are my configuration/dotfiles files.** 
+
+*It is a work in progress !!*
