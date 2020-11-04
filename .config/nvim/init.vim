@@ -8,6 +8,7 @@
 "                                                                                                                  "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "  This art work is generated using http://patorjk.com/software/taag/#p=display&f=Graffiti&t=Type%20Something%20   "
+"  																									               "
 "  The configurations are referred/insprired from:   															   "
 "  		- https://jdhao.github.io/2018/12/24/centos_nvim_install_use_guide_en/									   "
 "  		- https://github.com/benawad/dotfiles   																   "
@@ -26,6 +27,7 @@ Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-jedi'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'sheerun/vim-polyglot'
 
 call plug#end()
 
