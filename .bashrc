@@ -135,6 +135,8 @@ alias vimb='nvim ~/.bashrc'
 alias srcb='source ~/.bashrc'
 alias vimi='nvim ~/.config/nvim/init.vim'
 alias srcv='source ./venv/bin/activate'
+alias vimt='vim ~/.tmux.conf'
+
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/home/priyakdey/.sdkman"
@@ -145,3 +147,10 @@ export PATH=$PATH:~/.local/bin
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# `sudo apt install keychain` before sourcing this file
+# This is added top start the ssh-agent on wsl side
+#eval ``keychain --eval --agents ssh id_rsa
+eval $(ssh-agent -s)
+ssh-add ~/.ssh/id_rsa
+
