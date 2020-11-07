@@ -28,6 +28,8 @@ Plug 'zchee/deoplete-jedi'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'sheerun/vim-polyglot'
+Plug 'jiangmiao/auto-pairs'
+" Plug 'scrooloose/nerdcommenter'
 
 call plug#end()
 
@@ -48,7 +50,7 @@ set cmdheight=2
 set updatetime=300
 set termguicolors		" enable true color support
 set splitbelow			" preview windows opens below
-
+set mouse=a			" enable mouse scroll
 
 let ayucolor="dark"		" light/mirage/dark
 colorscheme ayu

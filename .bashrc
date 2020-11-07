@@ -134,6 +134,7 @@ alias pip='pip3'
 alias vimb='nvim ~/.bashrc'
 alias srcb='source ~/.bashrc'
 alias vimi='nvim ~/.config/nvim/init.vim'
+alias srcv='source ./venv/bin/activate'
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/home/priyakdey/.sdkman"
