@@ -56,6 +56,8 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+force_color_prompt=yes
+
 # method to check the branch if folder is a git repo
 parse_git_branch() {
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'

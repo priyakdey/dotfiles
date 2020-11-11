@@ -36,11 +36,13 @@ call plug#end()
 
 " basic settings
 syntax on
+
+set noerrorbells
 set number
 set relativenumber
 set smartcase
 set tabstop=4
-set softtabstop=0
+set softtabstop=4
 set nowrap
 set noswapfile
 set nobackup
@@ -51,6 +53,11 @@ set updatetime=300
 set termguicolors		" enable true color support
 set splitbelow			" preview windows opens below
 set mouse=a			" enable mouse scroll
+set smartindent
+set incsearch
+
+set colorcolumn=80
+highlight ColorColumn ctermbg=0 guibg=lightgrey	
 
 let ayucolor="dark"		" light/mirage/dark
 colorscheme ayu
