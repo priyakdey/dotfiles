@@ -29,6 +29,8 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'sheerun/vim-polyglot'
 Plug 'jiangmiao/auto-pairs'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install()  }  }
+Plug 'junegunn/fzf.vim'
 " Plug 'scrooloose/nerdcommenter'
 
 call plug#end()
@@ -78,4 +80,6 @@ let g:airline_solarized_bg='dark'
 
 " Key bindings
 map <C-b> :NERDTreeToggle<CR>		
+map <C-o> :Files<CR>
+map <C-G> :GFiles<CR>
 
