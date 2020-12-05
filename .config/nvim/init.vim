@@ -20,8 +20,10 @@
 " Plugins go below. Call PlugInstall to install new 
 call plug#begin('~/.config/nvim/plugins')
 
-" Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'ayu-theme/ayu-vim'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" Plug 'ayu-theme/ayu-vim'
+Plug 'morhetz/gruvbox'
+" Plug 'trevordmiller/nova-vim'
 Plug 'preservim/nerdtree'
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 Plug 'zchee/deoplete-jedi'
@@ -58,22 +60,27 @@ set mouse=a			" enable mouse scroll
 set smartindent
 set incsearch
 
-set colorcolumn=80
-highlight ColorColumn ctermbg=0 guibg=lightgrey	
+set colorcolumn=85
+highlight ColorColumn ctermbg=0 guibg=lightgrey
 
-let ayucolor="dark"		" light/mirage/dark
-colorscheme ayu
+" let ayucolor="dark"		" light/mirage/dark
+" colorscheme ayu
 
 " Change default arrows in NerdTree
 let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 
 " Use deoplete
-let g:deoplete#enable_at_startup = 1
+" let g:deoplete#enable_at_startup = 1
 
 " Close method preview window
 " Someday this shit is gonna make sense to you !!!
-autocmd InsertLeave, CompleteDone * if pumvisible() == 0 | pclose | endif
+" autocmd InsertLeave, CompleteDone * if pumvisible() == 0 | pclose | endif
+
+" Theme
+syntax enable
+set background=dark
+colorscheme gruvbox
 
 let g:airline_theme='solarized'
 let g:airline_solarized_bg='dark'
