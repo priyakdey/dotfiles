@@ -138,13 +138,14 @@ alias srcb='source ~/.bashrc'
 alias vimi='nvim ~/.config/nvim/init.vim'
 alias srcv='source ./venv/bin/activate'
 alias vimt='vim ~/.tmux.conf'
-
+alias code="code-insiders"
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/home/priyakdey/.sdkman"
 [[ -s "/home/priyakdey/.sdkman/bin/sdkman-init.sh" ]] && source "/home/priyakdey/.sdkman/bin/sdkman-init.sh"
 
 export PATH=$PATH:~/.local/bin
+
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -154,5 +155,19 @@ export NVM_DIR="$HOME/.nvm"
 # This is added top start the ssh-agent on wsl side
 #eval ``keychain --eval --agents ssh id_rsa
 eval $(ssh-agent -s)
-ssh-add ~/.ssh/id_rsa
+ssh-add ~/.ssh/id_ed25519
+
+# source it from .bashrc or .bash_profile
+source /etc/profile.d/bash_completion.sh
+
+# Settings for Golang
+export GOROOT=/usr/local/go
+export PATH=$PATH:$GOROOT/bin
+# For 3rd party packages
+export GOPATH=/home/priyakdey/go
+export PATH=$PATH:$GOPATH/bin
+# For workspace
+export GOPATH=$GOPATH:/home/priyakdey/workspace/learning/go
+
+
 
