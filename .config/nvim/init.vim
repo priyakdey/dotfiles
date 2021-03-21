@@ -45,8 +45,9 @@ set noerrorbells
 set number
 set relativenumber
 set smartcase
-set tabstop=4
-set softtabstop=4
+set tabstop=8
+set softtabstop=0
+set shiftwidth=4
 set nowrap
 set noswapfile
 set nobackup
@@ -59,6 +60,8 @@ set splitbelow			" preview windows opens below
 set mouse=a			" enable mouse scroll
 set smartindent
 set incsearch
+set expandtab
+set smarttab
 
 set colorcolumn=85
 highlight ColorColumn ctermbg=0 guibg=lightgrey
@@ -89,4 +92,3 @@ let g:airline_solarized_bg='dark'
 map <C-b> :NERDTreeToggle<CR>		
 map <C-o> :Files<CR>
 map <C-G> :GFiles<CR>
-
