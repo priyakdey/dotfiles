@@ -1,7 +1,10 @@
 # If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/bin:/usr/local/bin:$PATH
 
-# Path to your oh-my-zsh installation.
+export NVM_DIR="~/.nvm"
+source ~/.nvm/nvm.sh
+
+#Path to your oh-my-zsh installation.
 export ZSH="/home/priyakdey/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
@@ -9,7 +12,8 @@ export ZSH="/home/priyakdey/.oh-my-zsh"
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 # ZSH_THEME="robbyrussell"
-ZSH_THEME="agnoster"
+# ZSH_THEME="agnoster"
+ZSH_THEME="avit"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -125,6 +129,9 @@ alias srcenv="source ./venv/bin/activate"
 
 # Enable dircolors
 eval `dircolors ~/.dircolors`
+
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 
 # sdkman config
 export SDKMAN_DIR="/home/priyakdey/.sdkman"
