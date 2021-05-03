@@ -17,23 +17,39 @@
 "  																												   "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Plugins go below. Call PlugInstall to install new 
+" Plugins go below. 
 call plug#begin('~/.config/nvim/plugins')
 
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-" Plug 'ayu-theme/ayu-vim'
+" Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
 Plug 'morhetz/gruvbox'
-" Plug 'trevordmiller/nova-vim'
+
 Plug 'preservim/nerdtree'
+
+" Autocompletion Engine
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+
+" Python auto-completion
 Plug 'zchee/deoplete-jedi'
+
+" Status bar plugin
 Plug 'vim-airline/vim-airline'
+
+" Status bar theme plugin
 Plug 'vim-airline/vim-airline-themes'
-Plug 'sheerun/vim-polyglot'
+
+" Plug 'sheerun/vim-polyglot'
+
 Plug 'jiangmiao/auto-pairs'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install()  }  }
-Plug 'junegunn/fzf.vim'
-" Plug 'scrooloose/nerdcommenter'
+
+" Commenter
+Plug 'scrooloose/nerdcommenter'
+
+" Code Checker Plugin
+Plug 'neomake/neomake'
+
+" Golang
+" Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 call plug#end()
 
@@ -74,21 +90,51 @@ let g:NERDTreeDirArrowExpandable = '▸'
 let g:NERDTreeDirArrowCollapsible = '▾'
 
 " Use deoplete
-" let g:deoplete#enable_at_startup = 1
+let g:deoplete#enable_at_startup = 1
+let g:python_host_prog = 'python'
+let g:python3_host_prog = 'python3'
+
 
 " Close method preview window
-" Someday this shit is gonna make sense to you !!!
-" autocmd InsertLeave, CompleteDone * if pumvisible() == 0 | pclose | endif
+autocmd InsertLeave, CompleteDone * if pumvisible() == 0 | pclose | endif
+
+
+" Python Linter
+let g:neomake_python_enabled_makers = ['flake8']
+
 
 " Theme
 syntax enable
 set background=dark
 colorscheme gruvbox
 
-let g:airline_theme='solarized'
-let g:airline_solarized_bg='dark'
+let g:airline_theme = 'solarized'
+let g:airline_solarized_bg = 'dark'
 
-" Key bindings
+" Golang  Settings
+" let g:go_highlight_fields = 1
+" let g:go_highlight_functions = 1
+" let g:go_highlight_function_call = 1
+" let g:go_highlight_extra_types = 1
+" let g:go_highlight_operators = 1
+
+
+" ============================================================================ "
+" ===                           KEY BINDINGS                               === "
+" ============================================================================ "
+
+" Remap leader key to ,
+let g:mapleader='<CR>'
+
 map <C-b> :NERDTreeToggle<CR>		
 map <C-o> :Files<CR>
-map <C-G> :GFiles<CR>
+
+
+" Split navigations
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
+inoremap <expr><tab> pumvisible() ? "\<C-n>" : "\<TAB>"
+

@@ -1,8 +1,18 @@
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH="/home/priyakdey/.local/bin:$PATH"
 
-export NVM_DIR="~/.nvm"
-source ~/.nvm/nvm.sh
+# For antlr
+export CLASSPATH="/usr/local/bin/antlr-4.9.2-complete.jar:$CLASSPATH"
+
+alias antlr="java -jar /usr/local/bin/antlr-4.9.2-complete.jar"
+alias grun="java org.antlr.v4.gui.TestRig"
+
+# export NVM_DIR="~/.nvm"
+# source ~/.nvm/nvm.sh
+
+export NVM_DIR=~/.nvm
+[ -s "$NVM_DIR/nvm.sh"  ] && . "$NVM_DIR/nvm.sh"
 
 #Path to your oh-my-zsh installation.
 export ZSH="/home/priyakdey/.oh-my-zsh"
@@ -75,9 +85,9 @@ ZSH_THEME="avit"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(
-    git
-)
+# plugins=(
+#    git
+# )
 
 source $ZSH/oh-my-zsh.sh
 source ~/.config/zsh-plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -114,7 +124,7 @@ alias vimi="nvim ~/.config/nvim/init.vim"
 alias vimt="nvim ~/.tmux.conf"
 
 alias zshedit="nvim ~/.zshrc"
-alias zshsrc="source ~/.zsh"
+alias zshsrc="source ~/.zshrc"
 alias ohmyzsh="mate ~/.oh-my-zsh"
 
 alias code="code-insiders"
@@ -129,6 +139,12 @@ alias srcenv="source ./venv/bin/activate"
 
 # Enable dircolors
 eval `dircolors ~/.dircolors`
+
+# Settings for Golang
+export PATH=$PATH:/usr/local/go/bin
+
+# Add Chrone driver for selenium
+export PATH="/home/priyakdey/chrom-driver/chromedriver:$PATH"
 
 # export NVM_DIR="$HOME/.nvm"
 # [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
