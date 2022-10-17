@@ -1,12 +1,16 @@
-[user]
-	email = priyak1991dey@gmail.com
-	name  = Priyak Dey
-[alias]
-        co = checkout
-        st = status
-        l  = log --graph --all --decorate --pretty=fuller --abbrev-commit
-        lg = log --graph --oneline --abbrev-commit -n 5
-        branches = branch -a
-        remotes = remote -v
 [core]
-	editor = nvim
+        autocrlf = true
+        editor   = vim
+[user]
+        name  = Priyak Dey
+        email = priyak1991dey@gmail.com
+[alias]
+        co       = checkout
+        st       = status
+        l        = log --graph --all --decorate --pretty=fuller --abbrev-commit
+        lg       = log --graph --oneline --abbrev-commit -n 5
+        branches = branch -a
+        remotes  = remote -v
+        cm       = commit -m
+        ft       = fetch --prune origin
+        cp 	 = cherry-pick
