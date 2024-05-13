@@ -1,3 +1,9 @@
+[color]
+	ui = true
+[branch]
+	autosetuprebase = never
+[log]
+	date = local
 [core]
         autocrlf = true
         editor   = vim
@@ -5,12 +11,18 @@
         name  = Priyak Dey
         email = priyak1991dey@gmail.com
 [alias]
-        co       = checkout
+	co       = checkout
         st       = status
         l        = log --graph --all --decorate --pretty=fuller --abbrev-commit
         lg       = log --graph --oneline --abbrev-commit -n 5
         branches = branch -a
         remotes  = remote -v
         cm       = commit -m
-        ft       = fetch --prune origin
+        ft       = fetch origin --prune
+        ftt      = fetch --prune origin '+refs/tags/*:refs/tags/*'
         cp 	 = cherry-pick
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f

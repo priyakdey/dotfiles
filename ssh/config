@@ -1,0 +1,6 @@
+# personal github account
+Host github.com
+    HostName github.com 
+    User git
+    IdentityFile ~/.ssh/priyak1991dey_gmail_rsa
+    IdentitiesOnly yes

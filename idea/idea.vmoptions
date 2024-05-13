@@ -1,0 +1,7 @@
+-Xmx6144m
+--Dfile.encoding=UTF-8
+-XX:+UseConcMarkSweepGCXmx4g
+-XX:MaxPermSize=512m
+-XX:ReservedCodeCacheSize=1g
+-Djava.net.preferIPv4Stack=true
+-Xbootclasspath/a:../lib/boot.jar
