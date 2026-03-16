@@ -199,18 +199,60 @@ require("lazy").setup({
     "neovim/nvim-lspconfig",
     config = function()
 
+      -- c/c++
       vim.lsp.config("clangd", {
         cmd = { "clangd" },
         filetypes = { "c", "cpp" },
         root_markers = { ".git", "compile_commands.json", "Makefile" },
       })
 
-      vim.lsp.enable("clangd")
-
+      -- go
+      vim.lsp.config("gopls", {
+        cmd = {"gopls"},
+        filetypes = { "go", "gomod", "gowork", "gotmpl" },
+        root_markers = { "go.work", "go.mod", ".git" },
+        settings = {
+            gopls = {
+                gofumpt = true,
+                usePlaceholders = true,
+                analyses = {
+                    unusedparams = true,
+                    shadow = true,
+                },
+            },
+        },
+    })
+    
+    -- enable/disable lsp
+    vim.lsp.enable("clangd")
+    vim.lsp.enable("gopls")
+    
     end,
   },
-
 })
+
+
+------------------------------------------------------------
+-- Go auto format / imports on save 
+------------------------------------------------------------
+vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = "*.go",
+    callback = function()
+        vim.lsp.buf.format( {async = false })
+    end,
+})
+
+
+------------------------------------------------------------
+-- Diagnostic Configuration 
+------------------------------------------------------------
+vim.diagnostic.config({
+    virtual_text = false,
+    signs = true,
+    underline = true,
+    update_in_insert = false,
+})
+
 
 ------------------------------------------------------------
 -- Telescope shortcuts
@@ -273,6 +315,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
 ------------------------------------------------------------
 
 vim.keymap.set("n", "<leader>m", ":Man ")
+
+vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float)
 
 -- restore terminal cursor on exit
 vim.cmd([[

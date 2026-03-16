@@ -114,9 +114,13 @@ if ! shopt -oq posix; then
 fi
 
 
-# Setup PATH
+# PATH configuration
 export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 export PATH="$PATH:$HOME/bin/thirdparty:$HOME/bin/personal"
+
+export PATH="$PATH:/usr/local/go/bin"
+export GOPATH="$HOME/go"
+export PATH="$PATH:$GOPATH/bin"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
