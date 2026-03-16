@@ -43,7 +43,7 @@ esac
 # uncomment for a colored prompt, if the terminal has the capability; turned
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
-#force_color_prompt=yes
+force_color_prompt=yes
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
@@ -56,17 +56,13 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
-force_color_prompt=yes
-
 # method to check the branch if folder is a git repo
 parse_git_branch() {
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
 }
 
-
 if [ "$color_prompt" = yes ]; then
-    # PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-    PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\] $ "
+    export PS1="\[\e[36m\]\u\[\e[0m\]@\[\e[32m\]\h:\[\e[33;1m\]\w\[\e[0m\]\[\e[32m\] \$(parse_git_branch)\[\e[0m\] \$ "
 else
     PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
 fi
@@ -96,14 +92,6 @@ fi
 # colored GCC warnings and errors
 #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
 
-# some more ls aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-
-# Add an "alert" alias for long running commands.  Use like so:
-#   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -126,48 +114,16 @@ if ! shopt -oq posix; then
 fi
 
 
-# All alias go here
-alias ll='ls -lrt'
-alias python='python3'
-alias py='python3'
-alias vi='nvim'
-alias vim='nvim'
-alias pip='pip3'
-alias vimb='nvim ~/.bashrc'
-alias srcb='source ~/.bashrc'
-alias vimi='nvim ~/.config/nvim/init.vim'
-alias srcv='source ./venv/bin/activate'
-alias vimt='vim ~/.tmux.conf'
-alias code="code-insiders"
-
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="/home/priyakdey/.sdkman"
-[[ -s "/home/priyakdey/.sdkman/bin/sdkman-init.sh" ]] && source "/home/priyakdey/.sdkman/bin/sdkman-init.sh"
-
-export PATH=$PATH:~/.local/bin
-
+# Setup PATH
+export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+export PATH="$PATH:$HOME/bin/thirdparty:$HOME/bin/personal"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# `sudo apt install keychain` before sourcing this file
-# This is added top start the ssh-agent on wsl side
-#eval ``keychain --eval --agents ssh id_rsa
-eval $(ssh-agent -s)
-ssh-add ~/.ssh/id_ed25519
 
-# source it from .bashrc or .bash_profile
-source /etc/profile.d/bash_completion.sh
-
-# Settings for Golang
-export GOROOT=/usr/local/go
-export PATH=$PATH:$GOROOT/bin
-# For 3rd party packages
-export GOPATH=/home/priyakdey/go
-export PATH=$PATH:$GOPATH/bin
-# For workspace
-export GOPATH=$GOPATH:/home/priyakdey/workspace/learning/go
-
-
-
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+export PATH="$HOME/.local/bin:$PATH"

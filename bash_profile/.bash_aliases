@@ -1,13 +1,15 @@
-alias python=python3.12
-alias pip=pip3.12
+alias python=python3.14
+alias pip=pip3.14
 
 alias ll='ls -lrt'
-alias lla='ls -lart'
+alias lla='ls -larth'
 
 alias k='kubectl'
 alias mk='minikube'
 
+alias vi=nvim
+alias vim=nvim
 
 # ALERT: EDIT PATH
-alias editb='vim ~/.bash_profile'
-alias srcb='source ~/.bash_profile'
+alias editb='vim ~/.bashrc'
+alias srcb='source ~/.bashrc'
