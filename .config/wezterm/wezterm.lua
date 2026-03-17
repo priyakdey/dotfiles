@@ -35,6 +35,7 @@ return {
 
     -- Disable ligatures (better for coding)
     harfbuzz_features = { "calt=0", "clig=0", "liga=0" },
-    
-    front_end = "WebGpu",
+   
+    -- It all boils down to Wayland being a piece of shit, I think
+    -- front_end = "WebGpu",
 }

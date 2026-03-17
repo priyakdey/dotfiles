@@ -165,14 +165,21 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    lazy = false,
     config = function()
-      require("nvim-treesitter").setup({
+      require("nvim-treesitter.config").setup({
         ensure_installed = {
           "c",
           "lua",
           "bash",
           "json",
           "markdown",
+          "go",
+          "python",
+          "rust",
+          "java",
+          "cpp",
+          "javascript",
         },
         highlight = { enable = true },
         indent = { enable = true },
@@ -192,16 +199,18 @@ require("lazy").setup({
   },
 
   ----------------------------------------------------------
-  -- LSP config (clangd)
+  -- LSP config 
   ----------------------------------------------------------
 
   {
     "neovim/nvim-lspconfig",
     config = function()
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
       -- c/c++
       vim.lsp.config("clangd", {
         cmd = { "clangd" },
+        capabilities = capabilities,
         filetypes = { "c", "cpp" },
         root_markers = { ".git", "compile_commands.json", "Makefile" },
       })
@@ -209,6 +218,7 @@ require("lazy").setup({
       -- go
       vim.lsp.config("gopls", {
         cmd = {"gopls"},
+        capabilities = capabilities,
         filetypes = { "go", "gomod", "gowork", "gotmpl" },
         root_markers = { "go.work", "go.mod", ".git" },
         settings = {
@@ -222,14 +232,89 @@ require("lazy").setup({
             },
         },
     })
-    
+   
+    -- python
+    vim.lsp.config("pylsp", {
+        cmd = { "pyslsp" },
+        filetypes = { "python" },
+        root_markers = { ".git", "pyproject.toml", "requirements.txt", "Pipfile" },
+        settings = {
+            pylsp = {
+                plugins = {
+                    pycodestyle = { enabled = false },
+                    mccabe = { enabled = false },
+                    mccabe = { enabled = false },
+                    ruff = { enabled = true },
+                    autopep8 = { enabled = false },
+                    yapf = { enabled = false },
+                },
+            },
+        },
+    })
+
     -- enable/disable lsp
     vim.lsp.enable("clangd")
     vim.lsp.enable("gopls")
+    vim.lsp.enable("pylsp")
     
     end,
   },
+
+  ------------------------------------------------------------
+  -- Auto bracket pairs 
+  ------------------------------------------------------------
+  {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    config = function()
+        require("nvim-autopairs").setup({
+            check_ts = true, -- uses treesitter
+            enable_check_bracket_line = false,
+        })
+    end,
+  },
+
+  ------------------------------------------------------------
+  -- Block Comments 
+  ------------------------------------------------------------
+  {
+    "numToStr/Comment.nvim",
+    config = function()
+        require("Comment").setup()
+    end,
+  },
+
+
+  ------------------------------------------------------------
+  -- Code completions 
+  ------------------------------------------------------------
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+        "hrsh7th/cmp-nvim-lsp",
+    },
+    config = function()
+        local cmp = require("cmp")
+
+        cmp.setup({
+            completion = {
+                completeopt = "menu,menuone,noinsert",
+            },
+            mapping = {
+                ["<C-n>"] = cmp.mapping.select_next_item(),
+                ["<C-p>"] = cmp.mapping.select_prev_item(),
+                ["<CR>"] = cmp.mapping.confirm({ select = true }),
+                ["<C-Space>"] = cmp.mapping.complete(),
+            },
+            sources = {
+                { name = "nvim_lsp" },
+            },
+        })
+    end,
+   },
+
 })
+
 
 
 ------------------------------------------------------------
@@ -242,6 +327,15 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     end,
 })
 
+------------------------------------------------------------
+-- Python auto format / imports on save 
+------------------------------------------------------------
+vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = "*.py",
+    callback = function()
+        vim.lsp.buf.format( {async = false })
+    end,
+})
 
 ------------------------------------------------------------
 -- Diagnostic Configuration 
@@ -286,14 +380,12 @@ vim.keymap.set("n", "<C-l>", "<C-w>l")
 ------------------------------------------------------------
 -- Save / quit
 ------------------------------------------------------------
-
 vim.keymap.set("n", "<C-s>", "<cmd>w<CR>")
 vim.keymap.set("n", "<C-q>", "<cmd>q<CR>")
 
 ------------------------------------------------------------
 -- LSP keymaps
 ------------------------------------------------------------
-
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(ev)
     local opts = { buffer = ev.buf }
@@ -304,6 +396,17 @@ vim.api.nvim_create_autocmd("LspAttach", {
     vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
 
     vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+    vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float)
+
+    vim.keymap.set("n", "<Esc>", function()
+        -- close all floating windows
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+            local config = vim.api.nvim_win_get_config(win)
+            if config.relative ~= "" then
+                vim.api.nvim_win_close(win, false)
+            end
+        end
+    end)
 
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
     vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
@@ -313,10 +416,25 @@ vim.api.nvim_create_autocmd("LspAttach", {
 ------------------------------------------------------------
 -- Man page lookup
 ------------------------------------------------------------
-
 vim.keymap.set("n", "<leader>m", ":Man ")
 
-vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float)
+
+------------------------------------------------------------
+-- Toggle Comment
+------------------------------------------------------------
+-- normal mode
+vim.keymap.set("n", "<C-/>", function()
+  require("Comment.api").toggle.linewise.current()
+end, { desc = "Toggle comment" })
+
+-- visual mode
+-- Toggle comment (visual mode)
+vim.keymap.set("v", "<C-/>", function()
+  local esc = vim.api.nvim_replace_termcodes("<ESC>", true, false, true)
+  vim.api.nvim_feedkeys(esc, "nx", false)
+  require("Comment.api").toggle.linewise(vim.fn.visualmode())
+end, { desc = "Toggle comment (visual)" })
+
 
 -- restore terminal cursor on exit
 vim.cmd([[
