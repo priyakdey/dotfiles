@@ -13,3 +13,5 @@ alias vim=nvim
 # ALERT: EDIT PATH
 alias editb='vim ~/.bashrc'
 alias srcb='source ~/.bashrc'
+alias srcv='source ./.venv/bin/activate' 
+

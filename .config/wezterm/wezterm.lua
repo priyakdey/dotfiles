@@ -2,17 +2,18 @@ local wezterm = require 'wezterm'
 
 return {
     -- Theme
-    color_scheme = "Gruvbox dark, hard (base16)",
+  --   color_scheme = "Gruvbox dark, hard (base16)",
+    color_scheme = "Google (dark) (terminal.sexy)",
 
     -- font
     font = wezterm.font("Ubuntu Sans Mono"),
-    font_size = 12.5,
+    font_size = 13,
 
     -- Cursor
     default_cursor_style = "BlinkingBar",
   
     -- Window size
-    initial_cols = 140,
+    initial_cols = 200,
     initial_rows = 40,
 
     window_padding = {
@@ -21,7 +22,7 @@ return {
         top = 6,
         bottom = 6,
     },
-    window_background_opacity = 0.95,
+    window_background_opacity = 1.0,
     window_decorations = "RESIZE",
 
     -- Scroll

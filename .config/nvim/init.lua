@@ -235,7 +235,7 @@ require("lazy").setup({
    
     -- python
     vim.lsp.config("pylsp", {
-        cmd = { "pyslsp" },
+        cmd = { "pylsp" },
         filetypes = { "python" },
         root_markers = { ".git", "pyproject.toml", "requirements.txt", "Pipfile" },
         settings = {
@@ -313,6 +313,29 @@ require("lazy").setup({
     end,
    },
 
+  ------------------------------------------------------------
+  -- Mason -- used ONLY to install jdtls (the Java server).
+  -- clangd / gopls / pylsp stay system-installed as before.
+  -- After first launch, run:  :MasonInstall jdtls
+  ------------------------------------------------------------
+  {
+    "williamboman/mason.nvim",
+    config = function()
+      require("mason").setup()
+    end,
+  },
+
+  ------------------------------------------------------------
+  -- Java (jdtls) -- IntelliJ-like Java support.
+  -- The server is started per-buffer in the "FileType java"
+  -- autocmd below (jdtls can't use vim.lsp.enable like the
+  -- others -- it needs a workspace dir resolved per project).
+  ------------------------------------------------------------
+  {
+    "mfussenegger/nvim-jdtls",
+    ft = "java",
+  },
+
 })
 
 
@@ -338,7 +361,93 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 })
 
 ------------------------------------------------------------
--- Diagnostic Configuration 
+-- Java (jdtls) -- starts the server per java buffer
+------------------------------------------------------------
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "java",
+    callback = function()
+        local ok, jdtls = pcall(require, "jdtls")
+        if not ok then
+            return
+        end
+
+        -- locate project root (multi-module aware)
+        local root_markers = { ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" }
+        local root_dir = require("jdtls.setup").find_root(root_markers)
+        if not root_dir then
+            return
+        end
+
+        -- per-project workspace so projects don't clobber each other
+        local project_name = vim.fn.fnamemodify(root_dir, ":p:h:t")
+        local workspace_dir = vim.fn.stdpath("cache") .. "/jdtls/workspace/" .. project_name
+
+        -- prefer the Mason-installed launcher, fall back to PATH
+        local mason_jdtls = vim.fn.stdpath("data") .. "/mason/bin/jdtls"
+        local jdtls_bin = (vim.fn.executable(mason_jdtls) == 1) and mason_jdtls or "jdtls"
+
+        local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+        jdtls.start_or_attach({
+            cmd = { jdtls_bin, "-data", workspace_dir },
+            root_dir = root_dir,
+            capabilities = capabilities,
+            settings = {
+                java = {
+                    signatureHelp = { enabled = true },
+                    completion = {
+                        favoriteStaticMembers = {
+                            "org.junit.jupiter.api.Assertions.*",
+                            "org.mockito.Mockito.*",
+                            "java.util.Objects.requireNonNull",
+                        },
+                        importOrder = { "java", "javax", "com", "org" },
+                    },
+                    -- never collapse imports into wildcards (com.foo.*)
+                    sources = {
+                        organizeImports = {
+                            starThreshold = 9999,
+                            staticStarThreshold = 9999,
+                        },
+                    },
+                    -- code generation (getters/setters/equals/toString)
+                    codeGeneration = {
+                        toString = {
+                            template = "${object.className}{${member.name()}=${member.value}, ${otherMembers}}",
+                        },
+                        useBlocks = true,
+                    },
+                },
+            },
+            init_options = {
+                bundles = {},
+            },
+        })
+
+        -- Java-only keymaps (in addition to the global LspAttach ones)
+        local opts = { buffer = true }
+        vim.keymap.set("n", "<leader>oi", jdtls.organize_imports, opts)
+        vim.keymap.set("n", "<leader>ev", jdtls.extract_variable, opts)
+        vim.keymap.set("n", "<leader>ec", jdtls.extract_constant, opts)
+        vim.keymap.set("n", "<leader>em", jdtls.extract_method, opts)
+        vim.keymap.set("v", "<leader>em", function()
+            jdtls.extract_method(true)
+        end, opts)
+    end,
+})
+
+------------------------------------------------------------
+-- Java auto format on save
+------------------------------------------------------------
+vim.api.nvim_create_autocmd("BufWritePre", {
+    pattern = "*.java",
+    callback = function()
+        vim.lsp.buf.format({ async = false })
+    end,
+})
+
+------------------------------------------------------------
+-- Diagnostic Configuration
 ------------------------------------------------------------
 vim.diagnostic.config({
     virtual_text = false,
@@ -359,14 +468,11 @@ vim.keymap.set("n", "<leader>fg", builtin.live_grep)
 vim.keymap.set("n", "<leader>fb", builtin.buffers)
 vim.keymap.set("n", "<leader>fr", builtin.oldfiles)
 
-vim.keymap.set("n", "<C-p>", builtin.find_files)
-
 ------------------------------------------------------------
 -- File explorer
 ------------------------------------------------------------
 
 vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>")
-vim.keymap.set("n", "<C-e>", "<cmd>NvimTreeToggle<CR>")
 
 ------------------------------------------------------------
 -- Window navigation
@@ -382,6 +488,8 @@ vim.keymap.set("n", "<C-l>", "<C-w>l")
 ------------------------------------------------------------
 vim.keymap.set("n", "<C-s>", "<cmd>w<CR>")
 vim.keymap.set("n", "<C-q>", "<cmd>q<CR>")
+vim.keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "Save file" })
+vim.keymap.set("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
 
 ------------------------------------------------------------
 -- LSP keymaps
@@ -423,13 +531,12 @@ vim.keymap.set("n", "<leader>m", ":Man ")
 -- Toggle Comment
 ------------------------------------------------------------
 -- normal mode
-vim.keymap.set("n", "<C-/>", function()
+vim.keymap.set("n", "<leader>/", function()
   require("Comment.api").toggle.linewise.current()
 end, { desc = "Toggle comment" })
 
 -- visual mode
--- Toggle comment (visual mode)
-vim.keymap.set("v", "<C-/>", function()
+vim.keymap.set("v", "<leader>/", function()
   local esc = vim.api.nvim_replace_termcodes("<ESC>", true, false, true)
   vim.api.nvim_feedkeys(esc, "nx", false)
   require("Comment.api").toggle.linewise(vim.fn.visualmode())
