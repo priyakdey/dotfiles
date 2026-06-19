@@ -188,6 +188,24 @@ require("lazy").setup({
   },
 
   ----------------------------------------------------------
+  -- Indent guides + current-scope highlight
+  ----------------------------------------------------------
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl", -- v3's module name is "ibl", not the repo name
+    config = function()
+      require("ibl").setup({
+        indent = { char = "│" }, -- faint line at every indent level
+        scope = {
+          enabled = true,    -- the brighter line for the block you're in (treesitter)
+          show_start = true, -- underline the first line of the scope
+          show_end = true,   -- underline the last line of the scope
+        },
+      })
+    end,
+  },
+
+  ----------------------------------------------------------
   -- Git signs
   ----------------------------------------------------------
 
@@ -490,6 +508,40 @@ vim.keymap.set("n", "<C-s>", "<cmd>w<CR>")
 vim.keymap.set("n", "<C-q>", "<cmd>q<CR>")
 vim.keymap.set("n", "<leader>w", "<cmd>w<CR>", { desc = "Save file" })
 vim.keymap.set("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
+
+------------------------------------------------------------
+-- Scratch buffer (VSCode-style "new untitled file")
+--   :Scratch        jump to the one shared scratch buffer
+--   :Save <path>    write current buffer to disk and adopt it
+------------------------------------------------------------
+local scratch_buf = nil
+
+local function open_scratch()
+  -- reuse the existing scratch buffer if it's still around
+  if scratch_buf and vim.api.nvim_buf_is_valid(scratch_buf) then
+    vim.api.nvim_set_current_buf(scratch_buf)
+    return
+  end
+
+  -- nvim_create_buf(listed=true, scratch=true):
+  --   scratch=true already sets buftype=nofile, bufhidden=hide, swapfile=off
+  scratch_buf = vim.api.nvim_create_buf(true, true)
+  vim.api.nvim_buf_set_name(scratch_buf, "[Scratch]")
+  vim.bo[scratch_buf].filetype = "markdown"
+  vim.api.nvim_set_current_buf(scratch_buf)
+end
+
+vim.api.nvim_create_user_command(
+  "Scratch",
+  open_scratch,
+  { desc = "Open the shared scratch buffer" }
+)
+
+vim.api.nvim_create_user_command("Save", function(opts)
+  local path = vim.fn.fnamemodify(opts.args, ":p")     -- expand ~ and relative paths
+  vim.cmd("write " .. vim.fn.fnameescape(path))         -- write contents to disk
+  vim.cmd("edit "  .. vim.fn.fnameescape(path))         -- re-open as a real file buffer
+end, { nargs = 1, complete = "file", desc = "Save current buffer to a path" })
 
 ------------------------------------------------------------
 -- LSP keymaps
