@@ -103,22 +103,6 @@ require("lazy").setup({
   -- Theme
   ----------------------------------------------------------
 
-  -- CURRENT THEME (commented out to try jonhoo's base16 gruvbox below).
-  -- To restore: delete/comment the base16 block and uncomment this one.
-  --[[
-  {
-    "ellisonleao/gruvbox.nvim",
-    priority = 1000,
-    lazy = false,
-    config = function()
-      require("gruvbox").setup({
-        contrast = "hard",
-      })
-      vim.cmd.colorscheme("gruvbox")
-    end,
-  },
-  --]]
-
   -- jonhoo's gruvbox: base16-nvim's gruvbox-dark-hard + a few highlight tweaks.
   {
     "wincent/base16-nvim",
@@ -216,25 +200,37 @@ require("lazy").setup({
 
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main", -- `main` is the current rewrite; required for Neovim 0.11+
     build = ":TSUpdate",
     lazy = false,
     config = function()
-      require("nvim-treesitter.config").setup({
-        ensure_installed = {
-          "c",
-          "lua",
-          "bash",
-          "json",
-          "markdown",
-          "go",
-          "python",
-          "rust",
-          "java",
-          "cpp",
-          "javascript",
-        },
-        highlight = { enable = true },
-        indent = { enable = true },
+      -- install the parsers we care about (async, no-op if already present)
+      require("nvim-treesitter").install({
+        "c",
+        "lua",
+        "bash",
+        "json",
+        "markdown",
+        "go",
+        "python",
+        "rust",
+        "java",
+        "cpp",
+        "javascript",
+      })
+
+      -- the `main` branch does NOT auto-enable highlighting/indent the way
+      -- `master`'s setup({ highlight = { enable = true } }) did. We turn it on
+      -- per-buffer: for any filetype that has a parser, start treesitter and
+      -- wire up treesitter-based indentation.
+      vim.api.nvim_create_autocmd("FileType", {
+        callback = function(ev)
+          -- vim.treesitter.start resolves the language from the filetype
+          -- (e.g. sh -> bash) and errors if no parser is installed, so pcall it.
+          if pcall(vim.treesitter.start, ev.buf) then
+            vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
       })
     end,
   },
