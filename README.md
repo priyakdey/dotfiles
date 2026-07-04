@@ -1,37 +1,75 @@
 # dotfiles
 
-My personal configuration files. `setup_linux.sh` symlinks the configs into `$HOME`;
-it does **not** install any tools — those are listed under [Manual install steps](#manual-install-steps).
+My configuration files, symlinked into place. The live config **is** the repo
+file, so the workflow is just git:
+
+```
+edit a config  ->  git commit && push     # on machine A
+git pull                                   # on machine B, changes are already live
+```
+
+No copying between machines — ever. `install.sh` only symlinks configs; it does
+**not** install any tools — those are under [Manual install steps](#manual-install-steps).
 
 ## Current setup
 
 | | |
 |---|---|
-| **Terminal** | WezTerm (`.config/wezterm/wezterm.lua`) |
+| **Terminal** | WezTerm (`wezterm/wezterm.lua`) |
 | **Font** | Ubuntu Sans Mono, size 13 |
 | **Shell** | Bash |
 | **Multiplexer** | tmux (prefix remapped to `C-a`) |
 | **Editor** | Neovim — lazy.nvim, gruvbox, telescope, treesitter, LSP for C/C++, Go, Python, Java |
 | **Languages** | Go, Node (via nvm), Java/Gradle/Maven (via SDKMAN), Python 3.14 |
 
-> The `iterm2/` profile and `.bash_profile` are leftover macOS config — kept for
-> reference, not used on the current Linux machine. See the TODO about platform splits.
-
 ## Setup a new machine
 
 ```bash
-git clone https://github.com/priyakdey/dotfiles ~/dev/github.com/priyakdey/dotfiles
-cd ~/dev/github.com/priyakdey/dotfiles
-./setup_linux.sh        # symlinks .bashrc, .bash_aliases, .gitconfig
+git clone https://github.com/priyakdey/dotfiles dotfiles
+cd dotfiles
+./install.sh            # detects OS, symlinks everything into $HOME (safe to re-run)
 ```
 
-Then work through the manual install steps below.
+`install.sh` locates the repo from its own path (clone it anywhere) and backs up
+any existing real file to `<file>.backup.<timestamp>` before replacing it. Then
+work through the manual install steps below.
+
+## Layout
+
+```
+install.sh          entrypoint: detects OS, symlinks everything (idempotent)
+lib/link.sh         the symlink helper
+shell/
+  common.sh         shared bash: prompt, aliases, nvm, sdkman   -> ~/.bash_common
+  bash_profile.macos   macOS login shell                        -> ~/.bash_profile
+  bashrc.linux         Linux interactive shell                  -> ~/.bashrc
+  .bash_aliases     shared aliases                              -> ~/.bash_aliases
+nvim/               -> ~/.config/nvim        (shared)
+wezterm/            -> ~/.config/wezterm     (shared)
+tmux/.tmux.conf     -> ~/.tmux.conf          (shared)
+git/.gitconfig      -> ~/.gitconfig          (shared)
+ssh/config          -> ~/.ssh/config         (shared)
+colors/.dircolors   -> ~/.dircolors          (Linux)
+iterm2/profile.json  imported manually       (macOS)
+```
+
+Most configs are identical across OSes and are shared as a single file. Only
+bash differs (macOS login shell vs Linux `.bashrc`); both source `common.sh`
+for the parts they have in common.
+
+## Machine-local overrides (kept out of git)
+
+- **git**: add `[include] path = ~/.gitconfig.local` to `git/.gitconfig` for
+  per-machine identity/credentials.
+- **ssh**: add `Include ~/.ssh/config.d/*` at the top of `ssh/config` for
+  per-machine hosts.
+- **secrets**: `~/.sonar.env` etc. are sourced only if present.
 
 ---
 
 ## Manual install steps
 
-`setup_linux.sh` only symlinks config files. Everything below has to be installed by hand.
+`install.sh` only symlinks config files. Everything below has to be installed by hand.
 
 Order matters: later steps assume earlier ones (e.g. `gopls` needs Go, `jdtls` needs a
 JDK, Neovim plugins need a C compiler + `make`).
@@ -64,11 +102,11 @@ Drop the `.ttf` files into `~/.local/share/fonts/` then run `fc-cache -fv`.
 
 ### 3. Terminal — WezTerm
 
-Config: `.config/wezterm/wezterm.lua`. Install from the official package/repo (apt's is stale).
+Config: `wezterm/wezterm.lua`. Install from the official package/repo (apt's is stale).
 
 ### 4. Neovim (tarball, not apt)
 
-Installed to `/opt/nvim-linux-x86_64` (already on PATH via `.bashrc`).
+Installed to `/opt/nvim-linux-x86_64` (already on PATH via `~/.bashrc`).
 
 ```bash
 curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
@@ -80,7 +118,7 @@ for the plugin-side manual bits.
 
 ### 5. Go (tarball) + gopls
 
-Installed to `/usr/local/go`; `GOPATH=$HOME/go` (both on PATH via `.bashrc`).
+Installed to `/usr/local/go`; `GOPATH=$HOME/go` (both on PATH via `~/.bashrc`).
 
 ```bash
 # download current go<ver>.linux-amd64.tar.gz from https://go.dev/dl/
@@ -95,14 +133,14 @@ go install golang.org/x/tools/gopls@latest    # lands in $HOME/go/bin
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
 # restart shell, then:
 nvm install --lts
-curl -fsSL https://get.pnpm.io/install.sh | sh -   # PNPM_HOME already in .bashrc
+curl -fsSL https://get.pnpm.io/install.sh | sh -   # PNPM_HOME already set in the shell config
 ```
 
 ### 7. JVM toolchain — SDKMAN → java / gradle / maven
 
 ```bash
 curl -s "https://get.sdkman.io" | bash
-# loader already at the END of .bashrc (must stay last)
+# loader already at the END of shell/common.sh (must stay last)
 # restart shell, then:
 sdk install java
 sdk install gradle
@@ -146,7 +184,7 @@ sudo install minikube-linux-amd64 /usr/local/bin/minikube
 
 ### 11. protoc (Protocol Buffers)
 
-`.bash_profile` references a `protoc-gen-go-json` build path:
+`shell/bash_profile.macos` references a `protoc-gen-go-json` build path (macOS):
 
 ```bash
 sudo apt install -y protobuf-compiler
@@ -168,10 +206,15 @@ go install github.com/mitchellh/protoc-gen-go-json@v1.1.0
 
 ---
 
+## Not yet automated
+
+- iTerm2 profile import (macOS) — see the note `install.sh` prints.
+- `vim/`, `zsh/`, `vscode/`, `idea/` are kept in the repo but not linked by
+  `install.sh` (not part of the active setup).
+
 ## TODO
 
-- [ ] Platform dependent files (`.bash_profile` is still macOS-flavored)
-- [ ] Some config management to setup machines easily ([dotfiles-as-bare-repo](https://www.atlassian.com/git/tutorials/dotfiles))
-- [ ] Remove hard coded path names, env variable driven
+- [ ] Package installs (the manual steps above) scripted per-OS
+- [ ] Fold the wezterm titlebar fix (`window_decorations = "TITLE | RESIZE"`)
 
 *Work in progress.*

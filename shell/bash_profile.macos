@@ -1,0 +1,39 @@
+# shell/bash_profile.macos — linked to ~/.bash_profile on macOS.
+# macOS terminals (iTerm2, Terminal.app) open LOGIN shells, which read
+# ~/.bash_profile (not ~/.bashrc), so this is the entrypoint on a Mac.
+
+# ---- Homebrew (sets PATH/MANPATH; keep early) ----------------------------
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+export PATH="$HOME/bin:$PATH"
+
+# ---- Protobuf ------------------------------------------------------------
+export PATH="$HOME/go/pkg/mod/github.com/mitchellh/protoc-gen-go-json@v1.1.0/build:$PATH"
+
+# ---- Go ------------------------------------------------------------------
+export PATH="$(go env GOPATH)/bin:$PATH"
+
+# ---- LLVM ----------------------------------------------------------------
+export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+
+# ---- Misc ----------------------------------------------------------------
+export CDPATH="$HOME/dev:$CDPATH"
+export BASH_SILENCE_DEPRECATION_WARNING=1
+
+# Colored ls (BSD coreutils)
+alias ls='ls -G'
+
+# Machine-local secrets (not tracked in the repo)
+[ -f ~/.sonar.env ] && source ~/.sonar.env
+
+# ---- pnpm ----------------------------------------------------------------
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# ---- Shared config (prompt, aliases, nvm, sdkman) — keep LAST for SDKMAN --
+[ -f ~/.bash_common ] && source ~/.bash_common
