@@ -33,11 +33,32 @@ vim.opt.splitright = true
 vim.opt.mouse = "a"
 vim.opt.clipboard = "unnamedplus"
 vim.opt.termguicolors = true
-vim.opt.colorcolumn = "100"
+vim.opt.colorcolumn = "80"
 vim.opt.signcolumn = "yes"
 vim.opt.cursorline = true
 vim.opt.scrolloff = 8
 vim.opt.sidescrolloff = 8
+
+-- persistent undo -- undo history survives closing the file.
+-- history lives in ~/.local/state/nvim/undo/
+vim.opt.undofile = true
+
+-- more useful diffs (nvim -d):
+--- ignore whitespace, use histogram algorithm, and indent heuristic.
+--- https://vimways.org/2018/the-power-of-diff/
+vim.opt.diffopt:append("iwhite")
+vim.opt.diffopt:append("algorithm:histogram")
+vim.opt.diffopt:append("indent-heuristic")
+
+------------------------------------------------------------
+-- Highlight yanked text briefly
+------------------------------------------------------------
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+  callback = function()
+    vim.highlight.on_yank({ timeout = 200 })
+  end,
+})
 
 ------------------------------------------------------------
 -- Restore cursor position
@@ -82,6 +103,9 @@ require("lazy").setup({
   -- Theme
   ----------------------------------------------------------
 
+  -- CURRENT THEME (commented out to try jonhoo's base16 gruvbox below).
+  -- To restore: delete/comment the base16 block and uncomment this one.
+  --[[
   {
     "ellisonleao/gruvbox.nvim",
     priority = 1000,
@@ -91,6 +115,34 @@ require("lazy").setup({
         contrast = "hard",
       })
       vim.cmd.colorscheme("gruvbox")
+    end,
+  },
+  --]]
+
+  -- jonhoo's gruvbox: base16-nvim's gruvbox-dark-hard + a few highlight tweaks.
+  {
+    "wincent/base16-nvim",
+    lazy = false,    -- load at start
+    priority = 1000, -- load first
+    config = function()
+      vim.cmd([[colorscheme gruvbox-dark-hard]])
+      vim.o.background = "dark"
+      -- transparent background (show terminal bg through)
+      vim.cmd([[hi Normal ctermbg=NONE]])
+      -- Less visible window separator
+      vim.api.nvim_set_hl(0, "WinSeparator", { fg = 1250067 })
+      -- Make comments more prominent -- they are important.
+      local bools = vim.api.nvim_get_hl(0, { name = "Boolean" })
+      vim.api.nvim_set_hl(0, "Comment", bools)
+      -- Make it clearly visible which argument we're at.
+      local marked = vim.api.nvim_get_hl(0, { name = "PMenu" })
+      vim.api.nvim_set_hl(0, "LspSignatureActiveParameter", {
+        fg = marked.fg,
+        bg = marked.bg,
+        ctermfg = marked.ctermfg,
+        ctermbg = marked.ctermbg,
+        bold = true,
+      })
     end,
   },
 
@@ -261,7 +313,6 @@ require("lazy").setup({
                 plugins = {
                     pycodestyle = { enabled = false },
                     mccabe = { enabled = false },
-                    mccabe = { enabled = false },
                     ruff = { enabled = true },
                     autopep8 = { enabled = false },
                     yapf = { enabled = false },
@@ -359,8 +410,11 @@ require("lazy").setup({
 
 
 ------------------------------------------------------------
--- Go auto format / imports on save 
+-- Per-filetype format-on-save (Go / Python) -- now handled by the
+-- generic capability-gated format-on-save in the LspAttach autocmd.
+-- Kept here (commented) in case you want to restore per-filetype control.
 ------------------------------------------------------------
+--[[
 vim.api.nvim_create_autocmd("BufWritePre", {
     pattern = "*.go",
     callback = function()
@@ -368,15 +422,13 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     end,
 })
 
-------------------------------------------------------------
--- Python auto format / imports on save 
-------------------------------------------------------------
 vim.api.nvim_create_autocmd("BufWritePre", {
     pattern = "*.py",
     callback = function()
         vim.lsp.buf.format( {async = false })
     end,
 })
+--]]
 
 ------------------------------------------------------------
 -- Java (jdtls) -- starts the server per java buffer
@@ -413,6 +465,15 @@ vim.api.nvim_create_autocmd("FileType", {
             settings = {
                 java = {
                     signatureHelp = { enabled = true },
+                    -- format on save uses google-java-format's rules (2-space
+                    -- indent) via the Eclipse profile XML, so nvim matches
+                    -- Spotless/google-java-format in CI.
+                    format = {
+                        settings = {
+                            url = vim.fn.expand("~/.config/nvim/eclipse-java-google-style.xml"),
+                            profile = "GoogleStyle",
+                        },
+                    },
                     completion = {
                         favoriteStaticMembers = {
                             "org.junit.jupiter.api.Assertions.*",
@@ -455,14 +516,17 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 ------------------------------------------------------------
--- Java auto format on save
+-- Java auto format on save -- now handled by the generic
+-- capability-gated format-on-save in the LspAttach autocmd.
 ------------------------------------------------------------
+--[[
 vim.api.nvim_create_autocmd("BufWritePre", {
     pattern = "*.java",
     callback = function()
         vim.lsp.buf.format({ async = false })
     end,
 })
+--]]
 
 ------------------------------------------------------------
 -- Diagnostic Configuration
@@ -500,6 +564,15 @@ vim.keymap.set("n", "<C-h>", "<C-w>h")
 vim.keymap.set("n", "<C-j>", "<C-w>j")
 vim.keymap.set("n", "<C-k>", "<C-w>k")
 vim.keymap.set("n", "<C-l>", "<C-w>l")
+
+------------------------------------------------------------
+-- Keep search results centered on screen
+------------------------------------------------------------
+vim.keymap.set("n", "n", "nzz", { silent = true })
+vim.keymap.set("n", "N", "Nzz", { silent = true })
+vim.keymap.set("n", "*", "*zz", { silent = true })
+vim.keymap.set("n", "#", "#zz", { silent = true })
+vim.keymap.set("n", "g*", "g*zz", { silent = true })
 
 ------------------------------------------------------------
 -- Save / quit
@@ -570,6 +643,19 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
     vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+
+    -- Generic format-on-save: any LSP that can format, will, on write.
+    -- Replaces the per-filetype BufWritePre autocmds (see below).
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if client and client.server_capabilities.documentFormattingProvider then
+      vim.api.nvim_create_autocmd("BufWritePre", {
+        group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = false }),
+        buffer = ev.buf,
+        callback = function()
+          vim.lsp.buf.format({ async = false, bufnr = ev.buf })
+        end,
+      })
+    end
   end,
 })
 
