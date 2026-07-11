@@ -19,7 +19,7 @@ No copying between machines — ever. `install.sh` only symlinks configs; it doe
 | **Font** | Ubuntu Sans Mono, size 13 |
 | **Shell** | Bash |
 | **Multiplexer** | tmux (prefix remapped to `C-a`) |
-| **Editor** | Neovim — lazy.nvim, gruvbox, telescope, treesitter, LSP for C/C++, Go, Python, Java |
+| **Editor** | Neovim — lazy.nvim, gruvbox, telescope, treesitter, LSP for C/C++, Go, Python, Java, JS/TS/React |
 | **Languages** | Go, Node (via nvm), Java/Gradle/Maven (via SDKMAN), Python 3.14 |
 
 ## Setup a new machine
@@ -134,6 +134,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
 # restart shell, then:
 nvm install --lts
 curl -fsSL https://get.pnpm.io/install.sh | sh -   # PNPM_HOME already set in the shell config
+npm install -g typescript typescript-language-server   # ts_ls — nvim JS/TS/React LSP
 ```
 
 ### 7. JVM toolchain — SDKMAN → java / gradle / maven
@@ -199,6 +200,7 @@ go install github.com/mitchellh/protoc-gen-go-json@v1.1.0
 | gopls | nvim Go LSP |
 | pylsp + ruff | nvim Python LSP + lint/format |
 | jdtls (Mason) + JDK | nvim Java LSP |
+| typescript-language-server (ts_ls) | nvim JS/TS/React LSP |
 | ripgrep | telescope live_grep |
 | gcc / make | treesitter parsers, telescope-fzf-native |
 | git-lfs | `.gitconfig` lfs filter |

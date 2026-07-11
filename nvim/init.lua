@@ -208,6 +208,8 @@ require("lazy").setup({
         "java",
         "cpp",
         "javascript",
+        "typescript",
+        "tsx",
       })
 
       -- the `main` branch does NOT auto-enable highlighting/indent the way
@@ -308,11 +310,21 @@ require("lazy").setup({
         },
     })
 
+    -- typescript / javascript / react (jsx + tsx)
+    -- install once:  npm install -g typescript typescript-language-server
+    vim.lsp.config("ts_ls", {
+        cmd = { "typescript-language-server", "--stdio" },
+        capabilities = capabilities,
+        filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+        root_markers = { "tsconfig.json", "jsconfig.json", "package.json", ".git" },
+    })
+
     -- enable/disable lsp
     vim.lsp.enable("clangd")
     vim.lsp.enable("gopls")
     vim.lsp.enable("pylsp")
-    
+    vim.lsp.enable("ts_ls")
+
     end,
   },
 
