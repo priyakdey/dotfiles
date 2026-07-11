@@ -110,15 +110,6 @@ require("lazy").setup({
     priority = 1000, -- load first
     config = function()
       vim.cmd([[colorscheme gruvbox-dark-hard]])
-      vim.o.background = "dark"
-      -- transparent background (show terminal bg through)
-      vim.cmd([[hi Normal ctermbg=NONE]])
-      -- Less visible window separator
-      vim.api.nvim_set_hl(0, "WinSeparator", { fg = 1250067 })
-      -- Make comments more prominent -- they are important.
-      local bools = vim.api.nvim_get_hl(0, { name = "Boolean" })
-      vim.api.nvim_set_hl(0, "Comment", bools)
-      -- Make it clearly visible which argument we're at.
       local marked = vim.api.nvim_get_hl(0, { name = "PMenu" })
       vim.api.nvim_set_hl(0, "LspSignatureActiveParameter", {
         fg = marked.fg,
@@ -246,8 +237,8 @@ require("lazy").setup({
         indent = { char = "│" }, -- faint line at every indent level
         scope = {
           enabled = true,    -- the brighter line for the block you're in (treesitter)
-          show_start = true, -- underline the first line of the scope
-          show_end = true,   -- underline the last line of the scope
+          show_start = false, -- underline the first line of the scope
+          show_end = false,   -- underline the last line of the scope
         },
       })
     end,
