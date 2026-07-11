@@ -2,5 +2,5 @@
 Host github.com
     HostName github.com 
     User git
-    IdentityFile ~/.ssh/priyak1991dey_gmail_rsa
+    IdentityFile ~/.ssh/id_priyak1991dey_gmail
     IdentitiesOnly yes
