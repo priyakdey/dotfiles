@@ -111,6 +111,14 @@ require("lazy").setup({
     config = function()
       vim.cmd([[colorscheme gruvbox-dark-hard]])
       local marked = vim.api.nvim_get_hl(0, { name = "PMenu" })
+      local bools = vim.api.nvim_get_hl(0, { name = 'Boolean' })
+	  vim.api.nvim_set_hl(0, 'Comment', bools)
+      -- doc comments (javadoc /** */, the newer ///, etc.) get their own
+      -- color so they stand out from regular // comments, which got
+      -- remapped to the Boolean color above. Reuse the same green as
+      -- directories in the file explorer.
+      local dirs = vim.api.nvim_get_hl(0, { name = 'Directory' })
+      vim.api.nvim_set_hl(0, '@comment.documentation', dirs)
       vim.api.nvim_set_hl(0, "LspSignatureActiveParameter", {
         fg = marked.fg,
         bg = marked.bg,
