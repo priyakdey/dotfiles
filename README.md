@@ -99,10 +99,20 @@ pipx ensurepath
 
 ### 2. Fonts
 
-- **Ubuntu Sans Mono** (used by `wezterm.lua`)
+- **Ubuntu Sans Mono** (used by `wezterm.lua`, i3 and polybar) — on Ubuntu:
+  `sudo apt install fonts-ubuntu`; other distros: drop the `.ttf`s manually
+- **Symbols Nerd Font** (polybar icons — `font-1` in `polybar/config.ini`;
+  without it every icon in the bar renders as □)
 - **JetBrains Mono** (alternate)
 
-Drop the `.ttf` files into `~/.local/share/fonts/` then run `fc-cache -fv`.
+Manual installs: drop the `.ttf` files into `~/.local/share/fonts/` then run
+`fc-cache -fv`. For the Nerd Font symbols:
+
+```bash
+curl -LO https://github.com/ryanoasis/nerd-fonts/releases/latest/download/NerdFontsSymbolsOnly.tar.xz
+tar -xf NerdFontsSymbolsOnly.tar.xz
+cp SymbolsNerdFont*-Regular.ttf ~/.local/share/fonts/ && fc-cache -f
+```
 
 ### 3. Terminal — WezTerm
 
@@ -206,7 +216,10 @@ sudo apt install -y \
   psmisc                  # killall — used to restart polybar on i3 reload
 ```
 
-Polybar and i3 both render with **Ubuntu Sans Mono** (see Fonts above).
+Polybar and i3 both render with **Ubuntu Sans Mono**, and polybar's icons need
+**Symbols Nerd Font** (both in Fonts above). The polybar CPU/GPU modules read
+`nvidia-smi` (NVIDIA driver) and the `k10temp`/`amdgpu` sysfs sensors; a missing
+sensor degrades to `?%` rather than breaking the bar.
 Select the "i3" session on the login screen after installing.
 
 ### 12. protoc (Protocol Buffers)
