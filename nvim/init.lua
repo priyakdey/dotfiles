@@ -438,6 +438,137 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 --]]
 
 ------------------------------------------------------------
+-- Formatting
+--   :Format    format the current buffer
+--   on save    json -> jq, yaml -> yq,
+--              js/ts(x) -> project prettier if the project uses it,
+--              everything else -> LSP (ruff via pylsp for Python,
+--              gofmt via gopls for Go, ts_ls when no prettier)
+------------------------------------------------------------
+local external_formatters = {
+  json = { "jq", "." },
+  yaml = { "yq", "-y", "." },   -- python yq (jq wrapper): -y = YAML output
+}
+
+-- run a stdin/stdout formatter over the buffer, writing back only on change
+-- so undo history and marks stay untouched when already formatted
+local function run_stdin_formatter(bufnr, cmd)
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local res = vim.system(cmd, {
+    stdin = table.concat(lines, "\n"),
+    text = true,
+  }):wait()
+  if res.code ~= 0 then
+    vim.notify(cmd[1] .. ": " .. vim.trim(res.stderr or ""), vim.log.levels.ERROR)
+    return
+  end
+  local out = vim.split(res.stdout, "\n")
+  if out[#out] == "" then
+    table.remove(out)
+  end
+  if not vim.deep_equal(out, lines) then
+    local view = vim.fn.winsaveview()
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, out)
+    vim.fn.winrestview(view)
+  end
+end
+
+local prettier_filetypes = {
+  javascript = true,
+  javascriptreact = true,
+  typescript = true,
+  typescriptreact = true,
+}
+
+local prettier_config_files = {
+  ".prettierrc", ".prettierrc.json", ".prettierrc.yml", ".prettierrc.yaml",
+  ".prettierrc.json5", ".prettierrc.js", ".prettierrc.cjs", ".prettierrc.mjs",
+  ".prettierrc.toml", "prettier.config.js", "prettier.config.cjs",
+  "prettier.config.mjs",
+}
+
+-- prettier command for this buffer, or nil when the project doesn't use
+-- prettier (no config file and no "prettier" key in package.json) -- the
+-- caller then falls through to LSP formatting (ts_ls)
+local function prettier_cmd(bufnr)
+  local fname = vim.api.nvim_buf_get_name(bufnr)
+  if fname == "" then
+    return nil
+  end
+  local dir = vim.fs.dirname(fname)
+
+  local has_config = #vim.fs.find(prettier_config_files, { path = dir, upward = true }) > 0
+  if not has_config then
+    local pkg = vim.fs.find("package.json", { path = dir, upward = true })[1]
+    if pkg then
+      local ok, decoded = pcall(vim.json.decode, table.concat(vim.fn.readfile(pkg), "\n"))
+      has_config = ok and type(decoded) == "table" and decoded.prettier ~= nil
+    end
+  end
+  if not has_config then
+    return nil
+  end
+
+  -- prefer the project's own prettier so versions/plugins match the repo
+  local nm = vim.fs.find("node_modules", { path = dir, upward = true, type = "directory" })[1]
+  local local_bin = nm and (nm .. "/.bin/prettier")
+  if local_bin and vim.fn.executable(local_bin) == 1 then
+    return { local_bin, "--stdin-filepath", fname }
+  end
+  if vim.fn.executable("prettier") == 1 then
+    return { "prettier", "--stdin-filepath", fname }
+  end
+  vim.notify("project uses prettier but it isn't installed; falling back to LSP formatting",
+    vim.log.levels.WARN)
+  return nil
+end
+
+local function format_buffer(bufnr, opts)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  opts = opts or {}
+
+  local cmd = external_formatters[vim.bo[bufnr].filetype]
+  if cmd then
+    if vim.fn.executable(cmd[1]) ~= 1 then
+      vim.notify(cmd[1] .. " not installed, cannot format", vim.log.levels.WARN)
+      return
+    end
+    run_stdin_formatter(bufnr, cmd)
+    return
+  end
+
+  if prettier_filetypes[vim.bo[bufnr].filetype] then
+    local prettier = prettier_cmd(bufnr)
+    if prettier then
+      run_stdin_formatter(bufnr, prettier)
+      return
+    end
+  end
+
+  local clients = vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/formatting" })
+  if #clients == 0 then
+    if opts.verbose then
+      vim.notify("no formatter available for this buffer", vim.log.levels.WARN)
+    end
+    return
+  end
+  vim.lsp.buf.format({ async = false, bufnr = bufnr })
+end
+
+vim.api.nvim_create_user_command("Format", function()
+  format_buffer(nil, { verbose = true })
+end, { desc = "Format the current buffer" })
+
+-- Format-on-save for every buffer; format_buffer no-ops when the buffer
+-- has neither an external formatter nor an LSP that can format.
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = vim.api.nvim_create_augroup("FormatOnSave", {}),
+  callback = function(ev)
+    format_buffer(ev.buf)
+  end,
+})
+
+------------------------------------------------------------
 -- Java (jdtls) -- starts the server per java buffer
 ------------------------------------------------------------
 vim.api.nvim_create_autocmd("FileType", {
@@ -592,30 +723,39 @@ vim.keymap.set("n", "<leader>q", "<cmd>q<CR>", { desc = "Quit" })
 ------------------------------------------------------------
 -- Scratch buffer (VSCode-style "new untitled file")
 --   :Scratch        jump to the one shared scratch buffer
+--   :SScratch       open it in a horizontal split
+--   :VScratch       open it in a vertical split
 --   :Save <path>    write current buffer to disk and adopt it
 ------------------------------------------------------------
 local scratch_buf = nil
 
-local function open_scratch()
+local function open_scratch(split)
   -- reuse the existing scratch buffer if it's still around
-  if scratch_buf and vim.api.nvim_buf_is_valid(scratch_buf) then
-    vim.api.nvim_set_current_buf(scratch_buf)
-    return
+  if not (scratch_buf and vim.api.nvim_buf_is_valid(scratch_buf)) then
+    -- nvim_create_buf(listed=true, scratch=true):
+    --   scratch=true already sets buftype=nofile, bufhidden=hide, swapfile=off
+    scratch_buf = vim.api.nvim_create_buf(true, true)
+    vim.api.nvim_buf_set_name(scratch_buf, "[Scratch]")
+    vim.bo[scratch_buf].filetype = "markdown"
   end
 
-  -- nvim_create_buf(listed=true, scratch=true):
-  --   scratch=true already sets buftype=nofile, bufhidden=hide, swapfile=off
-  scratch_buf = vim.api.nvim_create_buf(true, true)
-  vim.api.nvim_buf_set_name(scratch_buf, "[Scratch]")
-  vim.bo[scratch_buf].filetype = "markdown"
+  if split then
+    vim.cmd(split)
+  end
   vim.api.nvim_set_current_buf(scratch_buf)
 end
 
-vim.api.nvim_create_user_command(
-  "Scratch",
-  open_scratch,
-  { desc = "Open the shared scratch buffer" }
-)
+vim.api.nvim_create_user_command("Scratch", function()
+  open_scratch()
+end, { desc = "Open the shared scratch buffer" })
+
+vim.api.nvim_create_user_command("SScratch", function()
+  open_scratch("split")
+end, { desc = "Open the shared scratch buffer in a horizontal split" })
+
+vim.api.nvim_create_user_command("VScratch", function()
+  open_scratch("vsplit")
+end, { desc = "Open the shared scratch buffer in a vertical split" })
 
 vim.api.nvim_create_user_command("Save", function(opts)
   local path = vim.fn.fnamemodify(opts.args, ":p")     -- expand ~ and relative paths
@@ -651,18 +791,8 @@ vim.api.nvim_create_autocmd("LspAttach", {
     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
     vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
 
-    -- Generic format-on-save: any LSP that can format, will, on write.
-    -- Replaces the per-filetype BufWritePre autocmds (see below).
-    local client = vim.lsp.get_client_by_id(ev.data.client_id)
-    if client and client.server_capabilities.documentFormattingProvider then
-      vim.api.nvim_create_autocmd("BufWritePre", {
-        group = vim.api.nvim_create_augroup("LspFormatOnSave", { clear = false }),
-        buffer = ev.buf,
-        callback = function()
-          vim.lsp.buf.format({ async = false, bufnr = ev.buf })
-        end,
-      })
-    end
+    -- Format-on-save lives in the global FormatOnSave BufWritePre autocmd
+    -- (see the Formatting section), which falls back to LSP formatting here.
   end,
 })
 
