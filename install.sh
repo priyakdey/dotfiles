@@ -24,6 +24,13 @@ link ssh/config          "$HOME/.ssh/config"
 link shell/.bash_aliases "$HOME/.bash_aliases"
 link shell/common.sh     "$HOME/.bash_common"
 
+echo
+echo "Agentic:"
+link agentic/AGENTS.md                    "$HOME/.claude/CLAUDE.md"
+link agentic/AGENTS.md                    "$HOME/.codex/AGENTS.md"
+link agentic/claude/settings.json         "$HOME/.claude/settings.json"
+link agentic/claude/statusline-command.sh "$HOME/.claude/statusline-command.sh"
+
 case "$os" in
   Darwin)
     echo
