@@ -15,7 +15,7 @@ No copying between machines — ever. `install.sh` only symlinks configs; it doe
 
 | | |
 |---|---|
-| **WM (Linux)** | i3 (`i3/config`) — launcher: rofi, compositor: picom, bar: polybar |
+| **WM (Linux)** | i3 (`i3/config`) — launcher: rofi, compositor: picom, bar: polybar, wallpaper: feh (`i3/wallpaper.jpeg`) |
 | **Terminal** | WezTerm (`wezterm/wezterm.lua`) |
 | **Font** | Ubuntu Sans Mono, size 13 |
 | **Shell** | Bash |
@@ -209,6 +209,7 @@ sudo apt install -y \
   rofi \                  # launcher, bound to $mod+d
   picom \                 # compositor (shadows, rounded corners, vsync)
   polybar \               # status bar (i3 launches: polybar bar)
+  feh \                   # wallpaper — i3 runs: feh --bg-scale ~/.config/i3/wallpaper.jpeg
   dex \                   # runs XDG autostart .desktop files
   xss-lock \              # locks screen before suspend
   network-manager-gnome \ # nm-applet tray icon

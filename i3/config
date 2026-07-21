@@ -35,8 +35,11 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
 
-# Animations are cool, I think 
+# Animations are cool, I think
 exec --no-startup-id picom
+
+# Wallpaper — image lives in the repo, reachable here via the ~/.config/i3 symlink
+exec_always --no-startup-id feh --bg-scale ~/.config/i3/wallpaper.jpeg
 
 # Polybar
 exec_always --no-startup-id sh -c 'killall -q polybar; while pgrep -u $USER -x polybar >/dev/null; do sleep 0.2; done; polybar bar'
