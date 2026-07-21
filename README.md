@@ -15,6 +15,7 @@ No copying between machines — ever. `install.sh` only symlinks configs; it doe
 
 | | |
 |---|---|
+| **WM (Linux)** | i3 (`i3/config`) — launcher: rofi, compositor: picom, bar: polybar |
 | **Terminal** | WezTerm (`wezterm/wezterm.lua`) |
 | **Font** | Ubuntu Sans Mono, size 13 |
 | **Shell** | Bash |
@@ -50,6 +51,9 @@ tmux/.tmux.conf     -> ~/.tmux.conf          (shared)
 git/.gitconfig      -> ~/.gitconfig          (shared)
 ssh/config          -> ~/.ssh/config         (shared)
 colors/.dircolors   -> ~/.dircolors          (Linux)
+i3/                 -> ~/.config/i3          (Linux)
+picom/              -> ~/.config/picom       (Linux)
+polybar/            -> ~/.config/polybar     (Linux)
 iterm2/profile.json  imported manually       (macOS)
 ```
 
@@ -183,7 +187,29 @@ curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-
 sudo install minikube-linux-amd64 /usr/local/bin/minikube
 ```
 
-### 11. protoc (Protocol Buffers)
+### 11. Linux desktop — i3 / rofi / picom / polybar (Linux only)
+
+The window manager stack. `install.sh` links `i3/`, `picom/`, `polybar/` into
+`~/.config` on Linux only. rofi has **no config file** — it runs on defaults and
+just needs installing.
+
+```bash
+sudo apt install -y \
+  i3 i3lock \             # WM + screen locker (i3 config locks via xss-lock + i3lock)
+  rofi \                  # launcher, bound to $mod+d
+  picom \                 # compositor (shadows, rounded corners, vsync)
+  polybar \               # status bar (i3 launches: polybar bar)
+  dex \                   # runs XDG autostart .desktop files
+  xss-lock \              # locks screen before suspend
+  network-manager-gnome \ # nm-applet tray icon
+  pulseaudio-utils \      # pactl — volume keybindings
+  psmisc                  # killall — used to restart polybar on i3 reload
+```
+
+Polybar and i3 both render with **Ubuntu Sans Mono** (see Fonts above).
+Select the "i3" session on the login screen after installing.
+
+### 12. protoc (Protocol Buffers)
 
 `shell/bash_profile.macos` references a `protoc-gen-go-json` build path (macOS):
 

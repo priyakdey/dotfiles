@@ -40,6 +40,9 @@ case "$os" in
     echo "Linux:"
     link shell/bashrc.linux "$HOME/.bashrc"
     link colors/.dircolors  "$HOME/.dircolors"
+    link i3                 "$HOME/.config/i3"
+    link picom              "$HOME/.config/picom"
+    link polybar            "$HOME/.config/polybar"
     ;;
   *)
     echo
